@@ -8,11 +8,13 @@ import { extractAliasFields } from './event/alias';
 import { extractGroupFields } from './event/group';
 
 
-function emit(type: string, fields: Array, { client }: Object) {
+function emit(type: string, fields: Array, { client }: Object, isRetrying: boolean) {
   const currentClient = client();
 
   if (currentClient && typeof currentClient[type] === 'function') {
     currentClient[type](...fields);
+  else if (!isRetrying) {
+    setTimeout(() => emit(type, fields, { client }, true), 0)
   } else {
     warn('The analytics client you provided doesn\'t support ' +
          type +
